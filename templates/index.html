@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+ 
+<head>
+    <title>Image Processing App</title>
+ 
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+ 
+    <link href="../static/jumbotron-narrow.css" rel="stylesheet">
+
+    <link href="../static/style.css" rel="stylesheet">
+    
+</head>
+ 
+<body>
+ 
+    <div class="container">
+        <div class="header">
+            <h3 class="text-muted">Edge Detection using Sobel Operator</h3>
+        </div>
+ 
+        <div class="jumbotron">
+            <h1>Upload your image</h1>
+            <p class="lead"></p>
+	       <form id="upload-form" action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data">
+            <input id="file-picker" type="file" name="file" accept="image/*" class="hidden"">
+            <label for="file-picker" class="btn btn-lg btn-success">Select file</label>
+            <div id="file-picker-name"></div>
+            <div id="radio-form-group">
+                <input type="radio" name="options" id="option1" value="Maximum"> Maximum </input>
+                <input type="radio" name="options" id="option2" value="Average"> Average </input>
+                <input type="radio" name="options" id="option3" value="Minimum"> Minimum </input>
+            </div>
+            <div>
+                <button class="btn btn-lg btn-success" onclick="this.form.submit()">Upload</button>
+            </div>
+		 </form>
+        </div>
+    </div>
+    <script type="text/javascript">
+        var input = document.getElementById( 'file-picker' );
+        var infoArea = document.getElementById( 'file-picker-name' );
+
+        input.addEventListener( 'change', showFileName );
+
+        function showFileName( event ) {
+            // the change event gives us the input it occurred in 
+            var input = event.srcElement;
+            // the input has an array of files in the `files` property, each one has a name that you can use. We're just using the name here.
+            var fileName = input.files[0].name;
+  
+            // use fileName however fits your app best, i.e. add it into a div
+            infoArea.textContent = 'File name: ' + fileName;
+        }
+
+    </script>
+</body>
+ 
+</html>
