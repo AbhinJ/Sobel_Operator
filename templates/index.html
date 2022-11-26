@@ -23,11 +23,11 @@
             <h1>Upload your image</h1>
             <p class="lead"></p>
 	       <form id="upload-form" action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data">
-            <input id="file-picker" type="file" name="file" accept="image/*" class="hidden"">
+            <input id="file-picker" type="file" name="file" accept="image/*" class="hidden" required>
             <label for="file-picker" class="btn btn-lg btn-success">Select file</label>
             <div id="file-picker-name"></div>
             <div id="radio-form-group">
-                <input type="radio" name="options" id="option1" value="Maximum"> Maximum </input>
+                <input type="radio" name="options" id="option1" value="Maximum" checked> Maximum </input>
                 <input type="radio" name="options" id="option2" value="Average"> Average </input>
                 <input type="radio" name="options" id="option3" value="Minimum"> Minimum </input>
             </div>

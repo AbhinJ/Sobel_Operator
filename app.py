@@ -1,20 +1,54 @@
-from flask import Flask, render_template, request, send_from_directory
+from flask import Flask, render_template, request, send_from_directory, send_file
 import os
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
 import boto3, botocore
+from werkzeug.utils import secure_filename
+from io import BytesIO
+from dotenv import load_dotenv
 
 
 app = Flask(__name__)
 
-s3 = boto3.client(
-   "s3",
-   aws_access_key_id="AKIARSFMMB7C2FFJWFAU",
-   aws_secret_access_key="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"
-)
 
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
+load_dotenv()
+
+s3 = boto3.client(
+   "s3",
+   aws_access_key_id= os.getenv('AWS_ACCESS_KEY'),
+   aws_secret_access_key=os.getenv('AWS_SECRET_KEY')
+)
+
+def upload_file_to_s3(file, acl="public-read"):
+    filename = secure_filename(file.filename)
+    try:
+        s3.upload_fileobj(
+            file,
+            os.getenv('AWS_BUCKET_NAME'),
+            file.filename,
+            ExtraArgs={
+                "ACL": acl,
+                "ContentType": file.content_type
+            }
+        )
+
+    except Exception as e:
+        # This is a catch all exception, edit this part to fit your needs.
+        print("Something Happened: ", e)
+        return e
+    return file.filename
+
+def read_image_from_s3(bucket, key, region_name='us-east-1'):
+    
+    outfile = BytesIO()
+    s3.download_fileobj(bucket, key, outfile)
+    outfile.seek(0)
+    img = Image.open(outfile)
+    return np.array(img)
+
+
 
 def convolution(a,b):
   sum = 0
@@ -31,21 +65,23 @@ def main():
 @app.route("/upload", methods=["POST"])
 def upload():
 
-    target = os.path.join(APP_ROOT, 'static/images/')
-    if not os.path.isdir(target):
-        os.mkdir(target)
     upload = request.files['file']
     option = request.form['options']
-    print(option)
-    filename = upload.filename
-    print(filename)
-    destination = "/".join([target, filename])
-    upload.save(destination)
+    # print(option)
+    # filename = upload.filename
+    # print(filename)
+    # destination = "/".join([target, filename])
+    # upload.save(destination)
 
 
-    img = Image.open(destination)
-    img = np.array(img)
-    finalImgRow = len(img) - 2 
+    file_name = upload_file_to_s3(upload)
+    print(file_name)
+
+
+    img = read_image_from_s3(os.getenv('AWS_BUCKET_NAME'), file_name)
+    global finalImgRow 
+    global finalImgCol
+    finalImgRow = len(img) - 2
     finalImgCol = len(img[0]) - 2
     global magnitude
     magnitude = np.zeros(shape=(finalImgRow, finalImgCol), dtype = np.uint8)
@@ -95,28 +131,42 @@ def upload():
     plt.xlabel('Gradient Magnitude')
     plt.ylabel('Frequency')
 
-    target = os.path.join(APP_ROOT, 'static/images/chart.png')
-    plt.savefig(target,bbox_inches='tight')
+    # target = os.path.join(APP_ROOT, 'static/images/chart.png')
+
+    chart_data = BytesIO()
+    plt.savefig(chart_data, format='png',bbox_inches='tight')
+    chart_data.seek(0)
+    s3.upload_fileobj(
+            chart_data,
+            os.getenv('AWS_BUCKET_NAME'),
+            'chart.png',
+            ExtraArgs={
+                "ACL": 'public-read',
+            }
+    )
+
     plt.show()
     plt.close('all')
-    return render_template("base.html", image_name=filename, chart_name = 'chart.png')
+    image_url = f"https://sobeloperator.s3.amazonaws.com/{file_name}"
+    chart_url = f"https://sobeloperator.s3.amazonaws.com/chart.png"
+    return render_template("base.html", image_name = image_url, chart_name = chart_url)
 
 
 @app.route("/sobel", methods=["POST"])
 def sobel():
     # retrieve parameters from html form
     threshold = request.form['threshold']
-    filename = request.form['image']
+    # filename = request.form['image']
 
-    # open and process image
-    target = os.path.join(APP_ROOT, 'static/images')
-    destination = "/".join([target, filename])
+    # # open and process image
+    # target = os.path.join(APP_ROOT, 'static/images')
+    # destination = "/".join([target, filename])
 
 
-    img = Image.open(destination)
-    img = np.array(img)
-    finalImgRow = len(img) - 2 
-    finalImgCol = len(img[0]) - 2
+    # img = Image.open(destination)
+    # img = np.array(img)
+    # finalImgRow = len(img) - 2 
+    # finalImgCol = len(img[0]) - 2
     convolvedImg = np.zeros(shape=(finalImgRow, finalImgCol), dtype = np.uint8)
     for i in range(finalImgRow):
         for j in range(finalImgCol):
@@ -129,12 +179,14 @@ def sobel():
     # save and return image
 
     img_output = Image.fromarray(convolvedImg)
-    destination = "/".join([target, 'temp.png'])
-    if os.path.isfile(destination):
-        os.remove(destination)
-    img_output.save(destination)
-    return send_image('temp.png')
+    # destination = "/".join([target, 'temp.png'])
+    # if os.path.isfile(destination):
+    #     os.remove(destination)
+    output_data = BytesIO()
+    img_output.save(output_data , format='png')
+    output_data.seek(0)
+    return send_file(output_data, mimetype="image/png")
 
-@app.route('/static/images/<filename>')
-def send_image(filename):
-    return send_from_directory("static/images", filename)
+# @app.route('/static/images/<filename>')
+# def send_image(filename):
+#     return send_from_directory("static/images", filename)
