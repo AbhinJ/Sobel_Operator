@@ -14,7 +14,7 @@ Jinja2==3.1.2
 jmespath==1.0.1
 kiwisolver==1.4.4
 MarkupSafe==2.1.1
-matplotlib==3.6.2
+matplotlib==3.5.3
 numpy==1.23.4
 packaging==21.3
 Pillow==9.2.0
