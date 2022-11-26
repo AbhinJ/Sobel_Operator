@@ -3,9 +3,16 @@ import os
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
+import boto3, botocore
 
 
 app = Flask(__name__)
+
+s3 = boto3.client(
+   "s3",
+   aws_access_key_id="AKIARSFMMB7C2FFJWFAU",
+   aws_secret_access_key="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"
+)
 
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 
@@ -91,6 +98,7 @@ def upload():
     target = os.path.join(APP_ROOT, 'static/images/chart.png')
     plt.savefig(target,bbox_inches='tight')
     plt.show()
+    plt.close('all')
     return render_template("base.html", image_name=filename, chart_name = 'chart.png')
 
 
