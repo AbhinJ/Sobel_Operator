@@ -33,12 +33,16 @@
             <div>
                 <img src= {{chart_name}} class ="img-responsive center-block" style="margin-top: 10px;"/>
             </div>
+            <h4 style="margin-top: 15px;">
+                Mean of gradient magnitudes = {{chart_mean}}<br>
+                Median of gradient magnitudes = {{chart_median}}
+            </h4>
                 
         </div>
  
-        <div class="row marketing">
-            <div class="col-lg-6">
-                <h4>Edge Detector - Sobel Operator</h4>
+        <div class="ajlee">
+            <div>
+                <h4>Enter Your Threshold Value</h4>
                 <form id="form-threshold" action="{{url_for('sobel')}}" method="POST" enctype="multipart/form-data"> 
 			        <input type="number" name="threshold" placeholder="threshold" min=0 required>        
                     <button id="btnSobel" class="btn btn-lg btn-success" type="submit">Go</button>

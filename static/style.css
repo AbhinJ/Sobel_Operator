@@ -33,3 +33,7 @@ form#upload-form > div#radio-form-group{
     margin-bottom: 20px;
     margin-top: 20px;
 }
+.ajlee{
+    display: flex;
+    justify-content: center;
+}

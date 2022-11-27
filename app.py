@@ -125,6 +125,10 @@ def upload():
 
     magnitude_np = np.array(magnitude)
     hist_magnitude = magnitude_np.flatten()
+    
+    mean = int(np.mean(hist_magnitude))
+    median = int(np.median(hist_magnitude))
+
     counts, bins = np.histogram(hist_magnitude, bins = 50)
     plt.stairs(counts, bins)
     plt.title('Gradient Magnitude Histogram')
@@ -149,7 +153,7 @@ def upload():
     plt.close('all')
     image_url = f"https://sobeloperator.s3.amazonaws.com/{file_name}"
     chart_url = f"https://sobeloperator.s3.amazonaws.com/chart.png"
-    return render_template("base.html", image_name = image_url, chart_name = chart_url)
+    return render_template("base.html", image_name = image_url, chart_name = chart_url, chart_mean = mean, chart_median = median)
 
 
 @app.route("/sobel", methods=["POST"])
