@@ -121,7 +121,7 @@ def upload():
                 gradientX = convolution(matImg, kernelX)
                 gradientY = convolution(matImg, kernelY)
 
-            magnitude[i,j] = (gradientX**2 + gradientY**2)**0.5
+            magnitude[i,j] = ((gradientX**2 + gradientY**2)**0.5)*(0.25/(2**0.5))
 
     magnitude_np = np.array(magnitude)
     hist_magnitude = magnitude_np.flatten()
